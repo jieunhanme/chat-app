@@ -8,5 +8,6 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "types": ["node"]
-  }
+  },
+  "files": ["src/lib/next-auth.d.ts"]
 }
