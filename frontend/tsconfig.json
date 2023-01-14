@@ -17,7 +17,9 @@
     "baseUrl": "./src",
     "paths": {
       "@components/*": ["components/*"],
-      "@pages/*": ["pages/*"]
+      "@pages/*": ["pages/*"],
+      "@graphQL/*": ["graphql/operations/*"],
+      "@util/*": ["util/*"]
     }
   },
   "include": ["next-auth.d.ts", "next-env.d.ts", "**/*.ts", "**/*.tsx"],
