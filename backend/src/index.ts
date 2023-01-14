@@ -1,52 +1,64 @@
 import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { makeExecutableSchema } from "@graphql-tools/schema";
+import { PrismaClient } from "@prisma/client";
+import { getSession } from "next-auth/react";
+import express from "express";
+import http from "http";
+import cors from "cors";
+import bodyParser from "body-parser";
+import * as dotenv from "dotenv";
+
+import typeDefs from "./graphql/typeDefs";
+import resolvers from "./graphql/resolvers";
+import { GraphQLContext, Session } from "./util/types";
 
 const main = async () => {
-  const typeDefs = `#graphql
-    # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-  
-    # This "Book" type defines the queryable fields for every book in our data source.
-    type Book {
-      title: String
-      author: String
-    }
-  
-    # The "Query" type is special: it lists all of the available queries that
-    # clients can execute, along with the return type for each. In this
-    # case, the "books" query returns an array of zero or more Books (defined above).
-    type Query {
-      books: [Book]
-    }
-  `;
+  dotenv.config();
+  const app = express();
+  const httpServer = http.createServer(app);
 
-  const books = [
-    {
-      title: "The Awakening",
-      author: "Kate Chopin",
-    },
-    {
-      title: "City of Glass",
-      author: "Paul Auster",
-    },
-  ];
-
-  const resolvers = {
-    Query: {
-      books: () => books,
-    },
-  };
-
-  const server = new ApolloServer({
+  const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
   });
-  const PORT = 4000;
 
-  const { url } = await startStandaloneServer(server, {
-    listen: { port: 4000 },
+  const corsOptions = {
+    origin: process.env.CLIENT_ORIGIN,
+    credentials: true,
+  };
+
+  // NOTE Context Parameter
+  const prisma = new PrismaClient();
+  // const pubsub
+
+  const server = new ApolloServer({
+    schema,
+    csrfPrevention: true,
+    cache: "bounded",
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
   });
 
-  console.log(`🚀  Server ready at: ${url}`);
+  await server.start();
+
+  app.use(
+    "/graphql",
+    cors<cors.CorsRequest>(corsOptions),
+    bodyParser.json({ limit: "50mb" }),
+    expressMiddleware(server, {
+      context: async ({ req, res }): Promise<GraphQLContext> => {
+        const session = await getSession({ req });
+        return { session: session as Session, prisma };
+      },
+    })
+  );
+
+  // Modified server startup
+  await new Promise<void>((resolve) =>
+    httpServer.listen({ port: 4000 }, resolve)
+  );
+  console.log(`🚀 Server ready at http://localhost:4000/graphql`);
 };
 
 main().catch((error) => console.log(error));
