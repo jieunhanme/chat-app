@@ -48,7 +48,6 @@ const resolvers = {
             username,
           },
         });
-        console.log("Updated");
         /**
          * Success to Update Username
          */
