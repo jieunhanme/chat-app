@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import UserOperations from "@graphQL/user";
 import { CreateUsernameData, CreateUserNameVariables } from "@util/types";
+import { toast } from "react-hot-toast";
 
 interface IAuthProps {
   session: Session | null;
@@ -13,7 +14,6 @@ interface IAuthProps {
 }
 
 const Auth = ({ session, reloadSession }: IAuthProps) => {
-  console.log("🚀 ~ file: index.tsx:16 ~ Auth ~ session", session);
   const [username, setUsername] = useState<string>("");
 
   /**
@@ -24,21 +24,39 @@ const Auth = ({ session, reloadSession }: IAuthProps) => {
    * @CreateUsernameData : Response의 Type
    * @CreateUserNameVariables : Request의 Type
    */
-  const [createUsername, { data, loading, error }] = useMutation<
+  const [createUsername, { loading, error }] = useMutation<
     CreateUsernameData,
     CreateUserNameVariables
   >(UserOperations.Mutations.createUsername);
 
   const onSubmit = async () => {
+    if (!username) return;
+
     try {
-      if (!username) return;
-      await createUsername({ variables: { username } });
-    } catch (error) {
+      const { data } = await createUsername({ variables: { username } });
+
+      if (!data?.createUsername) {
+        throw new Error();
+      }
+      // backend 에서 정의한  error message
+      if (data.createUsername.error) {
+        const {
+          createUsername: { error },
+        } = data;
+
+        throw new Error(error);
+      }
+      /**
+       * Reload Session to Obtain new username
+       */
+      toast.success("Username successfully created! ✨");
+
+      reloadSession();
+    } catch (error: any) {
+      toast.error(error?.message);
       console.log("onSubmit error", error);
     }
   };
-
-  console.log("HERE IS DATA : ", data, loading, error);
 
   return (
     <Center height="100vh" border="1px solid gray">
