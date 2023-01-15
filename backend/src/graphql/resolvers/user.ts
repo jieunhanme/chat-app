@@ -9,10 +9,9 @@ const resolvers = {
       _: any,
       args: { username: string },
       context: GraphQLContext
-    ) => {
+    ): Promise<CreateUsernameResponse> => {
       const { username } = args;
       const { session, prisma } = context;
-      console.log("🚀 ~ file: user.ts:15 ~ session", session);
 
       if (!session?.user) {
         return {
@@ -20,14 +19,43 @@ const resolvers = {
         };
       }
 
-      const { id } = session.user;
+      const { id: userId } = session.user;
 
       try {
         /**
          * Check that username is not taken
          */
-        console.log("TEST", id);
-      } catch (error) {
+        const existingUser = await prisma.user.findUnique({
+          where: {
+            username,
+          },
+        });
+
+        // NOTE 중복되는 username이 있는 경우 object로, 없는 경우 null로 return
+        if (existingUser) {
+          return {
+            error: "Username already taken. Try anothor",
+          };
+        }
+        /**
+         * Update User
+         */
+        await prisma.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            username,
+          },
+        });
+        console.log("Updated");
+        /**
+         * Success to Update Username
+         */
+        return {
+          success: true,
+        };
+      } catch (error: any) {
         console.log("[ERROR] createUsername : ", error);
         return {
           error: error?.message,
