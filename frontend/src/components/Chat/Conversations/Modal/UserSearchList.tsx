@@ -3,9 +3,10 @@ import { SearchedUser } from "@util/types";
 
 interface UserSearchListProps {
   users: Array<SearchedUser>;
+  addParticipants: (user: SearchedUser) => void;
 }
 
-const UserSearchList = ({ users }: UserSearchListProps) => {
+const UserSearchList = ({ users, addParticipants }: UserSearchListProps) => {
   return (
     <>
       {users.length === 0 ? (
@@ -22,6 +23,7 @@ const UserSearchList = ({ users }: UserSearchListProps) => {
               py={2}
               px={2}
               key={user.id}
+              borderRadius={4}
               _hover={{ bg: "whiteAlpha.200" }}
             >
               <Avatar
@@ -34,7 +36,9 @@ const UserSearchList = ({ users }: UserSearchListProps) => {
                   size="sm"
                   bg="brand.100"
                   _hover={{ bg: "brand.100" }}
-                  onClick={() => {}}
+                  onClick={() => {
+                    addParticipants(user);
+                  }}
                 >
                   Select
                 </Button>
