@@ -59,7 +59,7 @@ const Auth = ({ session, reloadSession }: IAuthProps) => {
   };
 
   return (
-    <Center height="100vh" border="1px solid gray">
+    <Center height="100vh">
       <Stack align="center">
         {session ? (
           <>
@@ -69,7 +69,7 @@ const Auth = ({ session, reloadSession }: IAuthProps) => {
               value={username}
               onChange={(event) => setUsername(event.target.value.trim())}
             />
-            <Button width="100%" onClick={onSubmit}>
+            <Button width="100%" onClick={onSubmit} isLoading={loading}>
               Save
             </Button>
           </>
