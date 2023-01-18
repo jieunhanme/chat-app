@@ -1,5 +1,6 @@
 import { GraphQLError } from "graphql";
 import { CreateConverationResponse, GraphQLContext } from "../../util/types";
+import { Prisma } from "@prisma/client";
 
 const resolvers = {
   Mutation: {
@@ -31,28 +32,7 @@ const resolvers = {
               },
             },
           },
-          include: {
-            participants: {
-              include: {
-                user: {
-                  select: {
-                    id: true,
-                    username: true,
-                  },
-                },
-              },
-            },
-            latestMessage: {
-              include: {
-                sender: {
-                  select: {
-                    id: true,
-                    username: true,
-                  },
-                },
-              },
-            },
-          },
+          include: conversationPolutated,
         });
 
         return { conversationId: "" };
@@ -65,5 +45,32 @@ const resolvers = {
     },
   },
 };
+
+export const participantPopulated =
+  Prisma.validator<Prisma.ConversationParticipantInclude>()({
+    user: {
+      select: {
+        id: true,
+        username: true,
+      },
+    },
+  });
+
+export const conversationPolutated =
+  Prisma.validator<Prisma.ConversationInclude>()({
+    participants: {
+      include: participantPopulated,
+    },
+    latestMessage: {
+      include: {
+        sender: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    },
+  });
 
 export default resolvers;
