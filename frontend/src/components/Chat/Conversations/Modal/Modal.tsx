@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "next/router";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import {
   Button,
@@ -38,6 +39,8 @@ const ConversationModal = ({ session, isOpen, onClose }: ModalProps) => {
     user: { id: userId },
   } = session;
 
+  const router = useRouter();
+
   const [username, setUsername] = useState<string>("");
   const [participants, setParticipants] = useState<Array<SearchedUser>>([]);
 
@@ -55,7 +58,6 @@ const ConversationModal = ({ session, isOpen, onClose }: ModalProps) => {
     useMutation<CreateConversationData, CreateConversationInput>(
       ConversationOperations.Mutations.createConversation
     );
-
   /**
    * 선택한 유저와의 채팅룸 생성
    * participants의 id만 추리면 로그인한 유저의 id가 포함되어있지 않음
@@ -71,6 +73,23 @@ const ConversationModal = ({ session, isOpen, onClose }: ModalProps) => {
       const { data } = await createConversation({
         variables: { participantIds },
       });
+
+      if (!data?.createConversation) {
+        throw new Error("Failed to create conversation");
+      }
+
+      const {
+        createConversation: { conversationId },
+      } = data;
+
+      router.push({ query: { conversationId } });
+      /**
+       * Clear state and Close Modal
+       * on successful creation
+       */
+      setParticipants([]);
+      setUsername("");
+      onClose();
     } catch (error: any) {
       console.log("[ERROR] onCreateConversation : ", error);
       toast.error(error?.message);
@@ -103,7 +122,14 @@ const ConversationModal = ({ session, isOpen, onClose }: ModalProps) => {
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => {
+          setParticipants([]);
+          setUsername("");
+          onClose();
+        }}
+      >
         <ModalOverlay />
         <ModalContent bg="#2d2d2d" pb={4}>
           <ModalHeader>Create a Conversation</ModalHeader>
