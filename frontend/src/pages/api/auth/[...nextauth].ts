@@ -23,7 +23,6 @@ export default NextAuth({
   // NOTE DefaultSession이외에 추가한 param값들을 실제로 넘겨주는 곳
   callbacks: {
     async session({ session, token, user }) {
-      console.log("Inside of th session callbacks");
       return { ...session, user: { ...session.user, ...user } };
     },
   },

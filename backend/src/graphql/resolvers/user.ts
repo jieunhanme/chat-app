@@ -36,8 +36,6 @@ const resolvers = {
         console.log("[ERROR] searchUsers : ", error);
         throw new GraphQLError(error?.message);
       }
-
-      console.log("INSIDE BACKEND", searchedUsername);
     },
   },
   Mutation: {
