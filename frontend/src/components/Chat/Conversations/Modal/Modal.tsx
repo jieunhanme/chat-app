@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import {
   Button,
   Input,
@@ -11,18 +11,33 @@ import {
   ModalOverlay,
   Stack,
 } from "@chakra-ui/react";
+import { toast } from "react-hot-toast";
+import { Session } from "next-auth";
+
 import UserOprations from "@graphQL/user";
-import { SearchedUser, SearchUsersData, SearchUsersInput } from "@util/types";
+import ConversationOperations from "@graphQL/conversation";
+import {
+  CreateConversationData,
+  CreateConversationInput,
+  SearchedUser,
+  SearchUsersData,
+  SearchUsersInput,
+} from "@util/types";
+
 import UserSearchList from "./UserSearchList";
 import Participants from "./Participants";
-import { toast } from "react-hot-toast";
 
 interface ModalProps {
+  session: Session;
   isOpen: boolean;
   onClose: () => void;
 }
 
-const ConversationModal = ({ isOpen, onClose }: ModalProps) => {
+const ConversationModal = ({ session, isOpen, onClose }: ModalProps) => {
+  const {
+    user: { id: userId },
+  } = session;
+
   const [username, setUsername] = useState<string>("");
   const [participants, setParticipants] = useState<Array<SearchedUser>>([]);
 
@@ -36,20 +51,37 @@ const ConversationModal = ({ isOpen, onClose }: ModalProps) => {
     SearchUsersInput
   >(UserOprations.Queries.searchUsers);
 
+  const [createConversation, { loading: conversationCreateLoading }] =
+    useMutation<CreateConversationData, CreateConversationInput>(
+      ConversationOperations.Mutations.createConversation
+    );
+
+  /**
+   * 선택한 유저와의 채팅룸 생성
+   * participants의 id만 추리면 로그인한 유저의 id가 포함되어있지 않음
+   * session에서 로그인 userId 정보 가져오기
+   */
+  const onCreateConversaion = async () => {
+    const participantIds = [
+      userId,
+      ...participants.map((participant) => participant.id),
+    ];
+
+    try {
+      const { data } = await createConversation({
+        variables: { participantIds },
+      });
+    } catch (error: any) {
+      console.log("[ERROR] onCreateConversation : ", error);
+      toast.error(error?.message);
+    }
+  };
+
   const onSearch = (event: React.FormEvent) => {
     // form은 submit하면 화면이 refresh되는 특징이 있음 >> 막음
     event.preventDefault();
     // searchUsers Query
     searchUsers({ variables: { username } });
-  };
-
-  const onCreateConversaion = async () => {
-    try {
-      // createConversation mutation
-    } catch (error: any) {
-      console.log("[ERROR] onCreateConversation : ", error);
-      toast.error(error?.message);
-    }
   };
 
   /**
@@ -106,7 +138,8 @@ const ConversationModal = ({ isOpen, onClose }: ModalProps) => {
                   width="100%"
                   mt={6}
                   _hover={{ bg: "brand.100" }}
-                  onClick={() => {}}
+                  isLoading={conversationCreateLoading}
+                  onClick={onCreateConversaion}
                 >
                   Create Conversation
                 </Button>

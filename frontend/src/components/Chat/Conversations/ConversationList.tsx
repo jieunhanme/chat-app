@@ -27,7 +27,7 @@ const ConversationList = ({ session }: ConversationListProps) => {
           Find or start a Conversation
         </Text>
       </Box>
-      <ConversationModal isOpen={isOpen} onClose={onClose} />
+      <ConversationModal session={session} isOpen={isOpen} onClose={onClose} />
     </Box>
   );
 };
