@@ -1,5 +1,5 @@
 import { GraphQLError } from "graphql";
-import { CreateConverationResponse, GraphQLContext } from "../../util/types";
+import { GraphQLContext } from "../../util/types";
 import { Prisma } from "@prisma/client";
 
 const resolvers = {
@@ -8,7 +8,7 @@ const resolvers = {
       _: any,
       args: { participantIds: Array<string> },
       context: GraphQLContext
-    ): Promise<CreateConverationResponse> => {
+    ): Promise<{ conversationId: string }> => {
       const { participantIds } = args;
       const { session, prisma } = context;
 
@@ -35,13 +35,13 @@ const resolvers = {
           include: conversationPolutated,
         });
 
-        return { conversationId: "" };
+        // emit a CONVERSATION_CREATED event using pubsub
+
+        return { conversationId: conversation.id };
       } catch (error: any) {
         console.log("[ERROR] createConversation : ", error);
         throw new GraphQLError(error?.message);
       }
-
-      return { conversationId: "" };
     },
   },
 };

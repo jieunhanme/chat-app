@@ -32,6 +32,3 @@ export interface CreateUsernameResponse {
 /**
  * Conversation
  */
-export interface CreateConverationResponse {
-  conversationId: string;
-}
