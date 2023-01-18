@@ -28,3 +28,10 @@ export interface CreateUsernameResponse {
   success?: boolean;
   error?: string;
 }
+
+/**
+ * Conversation
+ */
+export interface CreateConverationResponse {
+  conversationId: string;
+}
