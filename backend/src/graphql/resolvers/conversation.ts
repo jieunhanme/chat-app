@@ -50,7 +50,7 @@ const resolvers = {
       context: GraphQLContext
     ): Promise<{ conversationId: string }> => {
       const { participantIds } = args;
-      const { session, prisma } = context;
+      const { session, prisma, pubsub } = context;
 
       if (!session?.user) {
         throw new GraphQLError("Not Authorized");
@@ -75,13 +75,25 @@ const resolvers = {
           include: conversationPolutated,
         });
 
-        // emit a CONVERSATION_CREATED event using pubsub
+        // 채팅방 생성 puvblish 발행
+        pubsub.publish("CONVERSATION_CREATED", {
+          conversationCreated: conversation,
+        });
 
         return { conversationId: conversation.id };
       } catch (error: any) {
         console.log("[ERROR] createConversation : ", error);
         throw new GraphQLError(error?.message);
       }
+    },
+  },
+  // Listening for events
+  Subscription: {
+    conversationCreated: {
+      subscribe: (_: any, __: any, context: GraphQLContext) => {
+        const { pubsub } = context;
+        return pubsub.asyncIterator(["CONVERSATION_CREATED"]);
+      },
     },
   },
 };

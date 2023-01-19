@@ -8,6 +8,10 @@ const typeDefs = `#graphql
     type Mutation {
         createConversation(participantIds:[String]): CreateConversationResponse
     }
+
+    type Subscription {
+      conversationCreated: Conversation
+    }
     
     type CreateConversationResponse {
         conversationId :String
