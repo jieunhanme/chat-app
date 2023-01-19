@@ -3,6 +3,12 @@ import { GraphQLContext } from "../../util/types";
 import { Prisma } from "@prisma/client";
 
 const resolvers = {
+  Query: {
+    conversations: async (_: any, __: any, context: GraphQLContext) => {
+      console.log("CONVERSATIONS QUERY");
+    },
+  },
+
   Mutation: {
     createConversation: async (
       _: any,
