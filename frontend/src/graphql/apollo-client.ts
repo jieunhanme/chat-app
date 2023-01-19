@@ -2,6 +2,8 @@ import { ApolloClient, HttpLink, InMemoryCache, split } from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
+import { getSession } from "next-auth/react";
+
 // TODO change to real-time app
 // NOTE GraphQL API와 REST API의 차이점은 graphQL의 endpoint uri는 ONLY ONE이라는 점!
 const httpLink = new HttpLink({
@@ -17,6 +19,9 @@ const wsLink =
     ? new GraphQLWsLink(
         createClient({
           url: "ws://localhost:4000/graphql/subscriptions",
+          connectionParams: async () => ({
+            session: await getSession(),
+          }),
         })
       )
     : null;

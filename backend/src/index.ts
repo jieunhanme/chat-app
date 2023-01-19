@@ -14,7 +14,7 @@ import { useServer } from "graphql-ws/lib/use/ws";
 
 import typeDefs from "./graphql/typeDefs";
 import resolvers from "./graphql/resolvers";
-import { GraphQLContext, Session } from "./util/types";
+import { GraphQLContext, Session, SubscriptionContext } from "./util/types";
 
 const main = async () => {
   dotenv.config();
@@ -31,17 +31,29 @@ const main = async () => {
     credentials: true,
   };
 
+  // NOTE Context Parameter
+  const prisma = new PrismaClient();
+  // const pubsub
+
   // Creating the WebSocket server
   const wsServer = new WebSocketServer({
     server: httpServer,
     path: "/graphql/subscriptions",
   });
   // WebSocketServer start listening.
-  const serverCleanup = useServer({ schema }, wsServer);
-
-  // NOTE Context Parameter
-  const prisma = new PrismaClient();
-  // const pubsub
+  const serverCleanup = useServer(
+    {
+      schema,
+      context: async (ctx: SubscriptionContext): Promise<GraphQLContext> => {
+        if (ctx.connectionParams && ctx.connectionParams.session) {
+          const { session } = ctx.connectionParams;
+          return { session, prisma };
+        }
+        return { session: null, prisma };
+      },
+    },
+    wsServer
+  );
 
   const server = new ApolloServer({
     schema,

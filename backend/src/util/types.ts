@@ -1,24 +1,35 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { ISODateString } from "next-auth";
+import { Context } from "graphql-ws/lib/server";
+
 import {
   conversationPolutated,
   participantPopulated,
 } from "../graphql/resolvers/conversation";
 
+/**
+ * Server Configuration
+ */
 export interface GraphQLContext {
   session: Session | null;
   prisma: PrismaClient;
   //pubsub
+}
+export interface Session {
+  user: User;
+  expires: ISODateString;
+}
+
+export interface SubscriptionContext extends Context {
+  connectionParams: {
+    session?: Session;
+  };
 }
 
 /**
  * Users
  */
 
-export interface Session {
-  user: User;
-  expires: ISODateString;
-}
 export interface User {
   id: string;
   username: string;
