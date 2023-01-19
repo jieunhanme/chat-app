@@ -9,6 +9,8 @@ import http from "http";
 import cors from "cors";
 import bodyParser from "body-parser";
 import * as dotenv from "dotenv";
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/lib/use/ws";
 
 import typeDefs from "./graphql/typeDefs";
 import resolvers from "./graphql/resolvers";
@@ -29,6 +31,14 @@ const main = async () => {
     credentials: true,
   };
 
+  // Creating the WebSocket server
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: "/graphql/subscriptions",
+  });
+  // WebSocketServer start listening.
+  const serverCleanup = useServer({ schema }, wsServer);
+
   // NOTE Context Parameter
   const prisma = new PrismaClient();
   // const pubsub
@@ -37,7 +47,20 @@ const main = async () => {
     schema,
     csrfPrevention: true,
     cache: "bounded",
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+    plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      // Proper shutdown for the WebSocket server.
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose();
+            },
+          };
+        },
+      },
+    ],
   });
 
   await server.start();
