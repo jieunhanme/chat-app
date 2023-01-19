@@ -11,6 +11,7 @@ import bodyParser from "body-parser";
 import * as dotenv from "dotenv";
 import { WebSocketServer } from "ws";
 import { useServer } from "graphql-ws/lib/use/ws";
+import { PubSub } from "graphql-subscriptions";
 
 import typeDefs from "./graphql/typeDefs";
 import resolvers from "./graphql/resolvers";
@@ -33,7 +34,7 @@ const main = async () => {
 
   // NOTE Context Parameter
   const prisma = new PrismaClient();
-  // const pubsub
+  const pubsub = new PubSub();
 
   // Creating the WebSocket server
   const wsServer = new WebSocketServer({
@@ -47,9 +48,9 @@ const main = async () => {
       context: async (ctx: SubscriptionContext): Promise<GraphQLContext> => {
         if (ctx.connectionParams && ctx.connectionParams.session) {
           const { session } = ctx.connectionParams;
-          return { session, prisma };
+          return { session, prisma, pubsub };
         }
-        return { session: null, prisma };
+        return { session: null, prisma, pubsub };
       },
     },
     wsServer
@@ -84,7 +85,7 @@ const main = async () => {
     expressMiddleware(server, {
       context: async ({ req, res }): Promise<GraphQLContext> => {
         const session = await getSession({ req });
-        return { session: session as Session, prisma };
+        return { session: session as Session, prisma, pubsub };
       },
     })
   );
