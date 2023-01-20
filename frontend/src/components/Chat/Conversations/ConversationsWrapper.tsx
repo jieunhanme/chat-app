@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useRouter } from "next/router";
 import { Box } from "@chakra-ui/react";
 import { Session } from "next-auth";
 import { useQuery } from "@apollo/client";
@@ -6,13 +8,15 @@ import ConversationList from "./ConversationList";
 import ConversationOperations from "@graphQL/conversation";
 import { ConversationsData } from "@util/types";
 import { ConversationPopulated } from "../../../../../backend/src/util/types";
-import { useEffect } from "react";
 
 interface ConversationsWrapperProps {
   session: Session;
 }
 
 const ConversationsWrapper = ({ session }: ConversationsWrapperProps) => {
+  const router = useRouter();
+  const { conversationId } = router.query;
+
   const {
     data: conversationsData,
     loading: conversationsLoading,
@@ -22,7 +26,14 @@ const ConversationsWrapper = ({ session }: ConversationsWrapperProps) => {
     ConversationOperations.Queries.conversations
   );
 
-  console.log("🚀 USERQUERY DATA: ", conversationsData);
+  /**
+   * 채팅방 목록에서 채팅 틀릭시
+   * 1. Router query param으로 선택한 conversation ID 전달
+   * 2. 선택한 채팅방에 읽지 않은 메시지가 있었던 경우 false로 값 갱신
+   */
+  const onViewConversation = async (conversationId: string) => {
+    router.push({ query: { conversationId } });
+  };
 
   const subscribeToNewConversations = () => {
     subscribeToMore({
@@ -38,8 +49,6 @@ const ConversationsWrapper = ({ session }: ConversationsWrapperProps) => {
         }
       ) => {
         if (!subscriptionData.data) return prev;
-        console.log("🚀 SUBSCRIPTION DATA: ", subscriptionData);
-
         const newConversation = subscriptionData.data.conversationCreated;
         // return 값으로 새로운 conversationsData를 반환
         return Object.assign({}, prev, {
@@ -58,11 +67,18 @@ const ConversationsWrapper = ({ session }: ConversationsWrapperProps) => {
   }, []);
 
   return (
-    <Box width={{ base: "100%", md: "400px" }} bg="whiteAlpha.50" py={6} px={3}>
+    <Box
+      display={{ base: conversationId ? "none" : "flex", md: "flex" }}
+      width={{ base: "100%", md: "400px" }}
+      bg="whiteAlpha.50"
+      py={6}
+      px={3}
+    >
       {/* Skeleton Loader */}
       <ConversationList
         session={session}
         conversations={conversationsData?.conversations || []}
+        onViewConversation={onViewConversation}
       />
     </Box>
   );
