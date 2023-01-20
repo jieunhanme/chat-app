@@ -30,10 +30,12 @@ const Auth = ({ session, reloadSession }: IAuthProps) => {
   >(UserOperations.Mutations.createUsername);
 
   const onSubmit = async () => {
-    if (!username) return;
+    if (!username.trim()) return;
 
     try {
-      const { data } = await createUsername({ variables: { username } });
+      const { data } = await createUsername({
+        variables: { username: username.trim() },
+      });
 
       if (!data?.createUsername) {
         throw new Error();
@@ -67,7 +69,7 @@ const Auth = ({ session, reloadSession }: IAuthProps) => {
             <Input
               placeholder="Enter a username"
               value={username}
-              onChange={(event) => setUsername(event.target.value.trim())}
+              onChange={(event) => setUsername(event.target.value)}
             />
             <Button width="100%" onClick={onSubmit} isLoading={loading}>
               Save
