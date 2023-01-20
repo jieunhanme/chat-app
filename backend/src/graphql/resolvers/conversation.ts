@@ -1,6 +1,7 @@
 import { GraphQLError } from "graphql";
 import { ConversationPopulated, GraphQLContext } from "../../util/types";
 import { Prisma } from "@prisma/client";
+import { withFilter } from "graphql-subscriptions";
 
 const resolvers = {
   Query: {
@@ -90,13 +91,36 @@ const resolvers = {
   // Listening for events
   Subscription: {
     conversationCreated: {
-      subscribe: (_: any, __: any, context: GraphQLContext) => {
-        const { pubsub } = context;
-        return pubsub.asyncIterator(["CONVERSATION_CREATED"]);
-      },
+      subscribe: withFilter(
+        (_: any, __: any, context: GraphQLContext) => {
+          const { pubsub } = context;
+          return pubsub.asyncIterator(["CONVERSATION_CREATED"]);
+        },
+        (
+          payload: ConversationCreatedSubscriptionPayload,
+          _,
+          context: GraphQLContext
+        ) => {
+          const { session } = context;
+          const {
+            conversationCreated: { participants },
+          } = payload; // publish의 data
+
+          // filter 조건 : 참자가목록에 유저가 속해있는 경우만!
+          const userIsParticipant = !!participants.find(
+            (participant) => participant.userId === session?.user.id
+          );
+
+          return userIsParticipant;
+        }
+      ),
     },
   },
 };
+
+export interface ConversationCreatedSubscriptionPayload {
+  conversationCreated: ConversationPopulated;
+}
 
 export const participantPopulated =
   Prisma.validator<Prisma.ConversationParticipantInclude>()({
