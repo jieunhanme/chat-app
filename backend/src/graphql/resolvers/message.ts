@@ -11,7 +11,64 @@ import {
 import { conversationPolutated } from "./conversation";
 
 const resolvers = {
-  Query: {},
+  Query: {
+    messages: async (
+      _: any,
+      args: { conversationId: string },
+      context: GraphQLContext
+    ): Promise<Array<MessagePopulated>> => {
+      const { session, prisma } = context;
+      const { conversationId } = args;
+
+      if (!session?.user) {
+        throw new GraphQLError("Not Authorized");
+      }
+
+      const {
+        user: { id: userId },
+      } = session;
+
+      /**
+       * Verify that conversation exist & user is a participant
+       */
+      const conversation = await prisma.conversation.findUnique({
+        where: {
+          id: conversationId,
+        },
+        include: conversationPolutated,
+      });
+
+      if (!conversation) {
+        throw new GraphQLError("Conversation Not Found");
+      }
+
+      const allowedToView = userIsConversationParticipant(
+        conversation.participants,
+        userId
+      );
+
+      if (!allowedToView) {
+        throw new GraphQLError("Not Authorized");
+      }
+
+      try {
+        const messages = await prisma.message.findMany({
+          where: {
+            conversationId,
+          },
+          include: messagePopulated,
+          orderBy: {
+            createdAt: "desc",
+          },
+        });
+
+        return messages;
+      } catch (error) {
+        console.log("[ERROR] messages : ", error);
+        throw new GraphQLError(error?.message);
+      }
+    },
+  },
   Mutation: {
     sendMessage: async (
       _: any,
