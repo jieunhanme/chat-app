@@ -19,47 +19,47 @@ import { GraphQLContext, Session, SubscriptionContext } from "./util/types";
 
 const main = async () => {
   dotenv.config();
-  const app = express();
-  const httpServer = http.createServer(app);
-
+  // ANCHOR Create the schema, which will be used separately by ApolloServer and the WebSocket server.
   const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
   });
 
-  const corsOptions = {
-    origin: process.env.CLIENT_ORIGIN,
-    credentials: true,
-  };
+  // ANCHOR Create an Express app and HTTP server; we will attach both the WebSocket server and the ApolloServer to this HTTP server.
+  const app = express();
+  const httpServer = http.createServer(app);
 
-  // NOTE Context Parameter
-  const prisma = new PrismaClient();
-  const pubsub = new PubSub();
-
-  // Creating the WebSocket server
+  // ANCHOR Create our WebSocket server using the HTTP server we just set up.
   const wsServer = new WebSocketServer({
     server: httpServer,
     path: "/graphql/subscriptions",
   });
-  // WebSocketServer start listening.
+
+  // ANCHOR Context Parameter
+  const prisma = new PrismaClient();
+  const pubsub = new PubSub();
+
+  // ANCHOR Save the returned server's info so we can shutdown this server later
   const serverCleanup = useServer(
     {
       schema,
       context: async (ctx: SubscriptionContext): Promise<GraphQLContext> => {
+        // ctx is the graphql-ws Context where connectionParams live
         if (ctx.connectionParams && ctx.connectionParams.session) {
           const { session } = ctx.connectionParams;
           return { session, prisma, pubsub };
         }
+        // Otherwise let our resolvers know we don't have a current user
         return { session: null, prisma, pubsub };
       },
     },
     wsServer
   );
 
+  // ANCHOR Set up ApolloServer.
   const server = new ApolloServer({
     schema,
     csrfPrevention: true,
-    cache: "bounded",
     plugins: [
       // Proper shutdown for the HTTP server.
       ApolloServerPluginDrainHttpServer({ httpServer }),
@@ -78,6 +78,11 @@ const main = async () => {
 
   await server.start();
 
+  const corsOptions = {
+    origin: process.env.CLIENT_ORIGIN,
+    credentials: true,
+  };
+
   app.use(
     "/graphql",
     cors<cors.CorsRequest>(corsOptions),
@@ -90,7 +95,7 @@ const main = async () => {
     })
   );
 
-  // Modified server startup
+  // ANCHOR Now that our HTTP server is fully set up, we can listen to it.
   await new Promise<void>((resolve) =>
     httpServer.listen({ port: 4000 }, resolve)
   );
