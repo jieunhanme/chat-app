@@ -1,4 +1,4 @@
-import { participantPopulated } from "../../../backend/src/util/types";
+import { ParticipantPopulated } from "../../../backend/src/util/types";
 
 /**
  * 로그인 유저를 제외한 참가자 목록
@@ -7,7 +7,7 @@ import { participantPopulated } from "../../../backend/src/util/types";
  * @returns string
  */
 export const formatUsernames = (
-  participants: Array<participantPopulated>,
+  participants: Array<ParticipantPopulated>,
   myUserId: string
 ) => {
   const usernames = participants
