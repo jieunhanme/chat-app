@@ -33,7 +33,7 @@ const FeedWrapper = ({ session }: FeedWrapperProps) => {
             flexGrow={1}
           >
             <MesssagesHeader userId={userId} conversationId={conversationId} />
-            <Messages />
+            <Messages userId={userId} conversationId={conversationId} />
           </Flex>
           <MessageInput session={session} conversationId={conversationId} />
         </>
