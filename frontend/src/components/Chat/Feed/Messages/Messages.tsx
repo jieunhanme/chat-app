@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 
 import MessageOperations from "@graphQL/message";
 import { MessagesData, MessagesVariables } from "@util/types";
+import SkeletonLoader from "@components/common/SkeletonLoader";
 
 interface MessagesProps {
   userId: string;
@@ -23,14 +24,13 @@ const Messages = ({ userId, conversationId }: MessagesProps) => {
     },
   });
 
+  if (error) {
+    return null;
+  }
+
   return (
-    <Flex direction="column" justify="flex-end" overflow="hidden">
-      {loading && (
-        <Stack>
-          {/* <SkeletonLoader count={4} height="60px" width="100%"/> */}
-          <span>LOADING MESSAGES</span>
-        </Stack>
-      )}
+    <Flex direction="column" justify="flex-end" overflow="hidden" px={4}>
+      {loading && <SkeletonLoader count={4} height="60px" spacing={4} />}
       {data?.messages && (
         <Flex direction="column-reverse" overflowY="scroll" height="100%">
           {data.messages.map((message) => (

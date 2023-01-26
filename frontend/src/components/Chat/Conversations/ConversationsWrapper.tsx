@@ -8,6 +8,7 @@ import ConversationList from "./ConversationList";
 import ConversationOperations from "@graphQL/conversation";
 import { ConversationsData } from "@util/types";
 import { ConversationPopulated } from "../../../../../backend/src/util/types";
+import SkeletonLoader from "@components/common/SkeletonLoader";
 
 interface ConversationsWrapperProps {
   session: Session;
@@ -74,12 +75,15 @@ const ConversationsWrapper = ({ session }: ConversationsWrapperProps) => {
       py={6}
       px={3}
     >
-      {/* Skeleton Loader */}
-      <ConversationList
-        session={session}
-        conversations={conversationsData?.conversations || []}
-        onViewConversation={onViewConversation}
-      />
+      {conversationsLoading ? (
+        <SkeletonLoader count={7} height="70px" />
+      ) : (
+        <ConversationList
+          session={session}
+          conversations={conversationsData?.conversations || []}
+          onViewConversation={onViewConversation}
+        />
+      )}
     </Box>
   );
 };
