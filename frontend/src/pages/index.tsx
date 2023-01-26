@@ -1,5 +1,6 @@
 import { Box } from "@chakra-ui/react";
 import { NextPageContext } from "next";
+import Head from "next/head";
 import { getSession, useSession } from "next-auth/react";
 import Auth from "@components/Auth";
 import Chat from "@components/Chat";
@@ -14,6 +15,9 @@ const Home = () => {
 
   return (
     <Box>
+      <Head>
+        <title>Chat App</title>
+      </Head>
       {session?.user.username ? (
         <Chat session={session} />
       ) : (
