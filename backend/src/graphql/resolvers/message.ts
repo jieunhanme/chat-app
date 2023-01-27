@@ -105,6 +105,24 @@ const resolvers = {
         });
 
         /**
+         * Find ConversaionParticipant entitiy
+         * not unique fields로 update사용이 불가능! >> updateMany가 문법상 맞다
+         */
+        const participant = await prisma.conversationParticipant.findFirst({
+          where: {
+            userId,
+            conversationId,
+          },
+        });
+
+        /**
+         * Should always exist
+         */
+        if (!participant) {
+          throw new GraphQLError("Participant does noe exist");
+        }
+
+        /**
          * Update Conversation entity
          */
         const conversation = await prisma.conversation.update({
@@ -116,7 +134,7 @@ const resolvers = {
             participants: {
               update: {
                 where: {
-                  id: senderId,
+                  id: participant.id,
                 },
                 data: {
                   hasSeenLatestMessage: true,
@@ -125,7 +143,7 @@ const resolvers = {
               updateMany: {
                 where: {
                   NOT: {
-                    userId: senderId,
+                    userId,
                   },
                 },
                 data: {
@@ -134,6 +152,7 @@ const resolvers = {
               },
             },
           },
+          include: conversationPolutated,
         });
 
         /**
