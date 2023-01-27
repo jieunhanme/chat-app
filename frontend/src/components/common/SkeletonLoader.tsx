@@ -4,18 +4,12 @@ export interface SkeletonLoaderProps {
   count: number;
   height: string;
   width?: string;
-  spacing?: number;
 }
 
-const SkeletonLoader = ({
-  count,
-  height,
-  width,
-  spacing,
-}: SkeletonLoaderProps) => {
+const SkeletonLoader = ({ count, height, width }: SkeletonLoaderProps) => {
   return (
     <>
-      <Stack width="100%" spacing={spacing ? spacing : 1}>
+      <Stack width="100%" p={4}>
         {[...Array(count)].map((_, i) => (
           <Skeleton
             key={i}
