@@ -10,6 +10,7 @@ import {
   MessageSubscriptionData,
 } from "@util/types";
 import SkeletonLoader from "@components/common/SkeletonLoader";
+import MessageItem from "./MessageItem";
 
 interface MessagesProps {
   userId: string;
@@ -79,8 +80,11 @@ const Messages = ({ userId, conversationId }: MessagesProps) => {
           // }}
         >
           {data.messages.map((message) => (
-            // <MessageItem />
-            <Text key={message.id}>{message.body}</Text>
+            <MessageItem
+              key={message.id}
+              message={message}
+              sentByMe={message.sender.id === userId}
+            />
           ))}
         </Flex>
       )}

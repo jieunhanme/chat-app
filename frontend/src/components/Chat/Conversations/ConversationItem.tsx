@@ -1,16 +1,7 @@
 import { Stack, Text, Flex, Avatar, Box } from "@chakra-ui/react";
 import { GoPrimitiveDot } from "react-icons/go";
-import { formatRelative } from "date-fns";
-import enUS from "date-fns/locale/en-US";
-import { formatUsernames } from "@util/functions";
+import { formatDate, formatUsernames } from "@util/functions";
 import { ConversationPopulated } from "../../../../../backend/src/util/types";
-
-const formatRelativeLocale = {
-  lastWeek: "eeee",
-  yesterday: "'Yesterday",
-  today: "p",
-  other: "MM/dd/yy",
-};
 
 interface ConversationItemProps {
   userId: string;
@@ -92,15 +83,7 @@ const ConversationItem = ({
           fontSize={13}
           lineHeight="24px"
         >
-          {formatRelative(new Date(conversation.updatedAt), new Date(), {
-            locale: {
-              ...enUS,
-              formatRelative: (token) =>
-                formatRelativeLocale[
-                  token as keyof typeof formatRelativeLocale
-                ],
-            },
-          })}
+          {formatDate(conversation.updatedAt)}
         </Text>
       </Flex>
     </Stack>
