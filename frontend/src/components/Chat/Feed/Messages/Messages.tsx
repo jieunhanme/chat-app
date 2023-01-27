@@ -63,9 +63,10 @@ const Messages = ({ userId, conversationId }: MessagesProps) => {
       {data?.messages && (
         <Flex
           direction="column-reverse"
-          overflowY="scroll"
+          overflowY="auto"
           height="100%"
           px={4}
+          pt={4}
           // sx={{
           //   "&::-webkit-scrollbar": {
           //     width: "16px",

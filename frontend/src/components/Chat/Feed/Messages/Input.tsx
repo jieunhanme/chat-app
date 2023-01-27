@@ -53,7 +53,7 @@ const MessageInput = ({ session, conversationId }: MessageInputProps) => {
   };
 
   return (
-    <Box px={4} py={5} width="100%">
+    <Box px={4} py={4} width="100%">
       <form onSubmit={onSendMessage}>
         <Input
           value={messageBody}
