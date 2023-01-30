@@ -52,6 +52,7 @@ const ConversationItem = ({
         width="100%"
         height="100%"
         position="relative"
+        overflow="hidden"
       >
         <Flex ml={1} direction="column" width="68%" height="100%">
           <Text
