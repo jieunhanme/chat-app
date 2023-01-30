@@ -1,7 +1,10 @@
 import { format, formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 
-import { ParticipantPopulated } from "../../../backend/src/util/types";
+import {
+  MessagePopulated,
+  ParticipantPopulated,
+} from "../../../backend/src/util/types";
 
 /**
  * 로그인 유저를 제외한 참가자 목록
@@ -23,11 +26,8 @@ export const formatUsernames = (
 /**
  * date-fns로 날짜 형식 뽑기
  */
-export const formatDate = (date: string, specific = false) => {
+export const formatConversationDate = (date: string) => {
   const d = new Date(date);
-  if (specific) {
-    return format(d, "PPP EEE a hh:mm", { locale: ko });
-  }
 
   const now = Date.now();
   const diff = (now - d.getTime()) / 1000; // 현재 시간과의 차이(초)
@@ -42,4 +42,32 @@ export const formatDate = (date: string, specific = false) => {
   //  PPP는 날짜, EEE는 요일, p는 시간 "PPP EEE p"
   // addSuffix : 접미사 붙이기 ( ...전, ...후 )
   return format(d, "yyyy.MM.dd", { locale: ko }); // 날짜 포맷
+};
+
+export const formatMessageItemDate = (date: string) => {
+  const d = new Date(date);
+  return format(d, "a hh:mm", { locale: ko });
+};
+
+export const formatMessageGroupDate = (date: string) => {
+  const d = new Date(date);
+  return format(d, "PPP EEEE", { locale: ko });
+};
+
+/**
+ * Message 그룹 묶기
+ */
+export const messageGroupBy = (
+  data: Array<MessagePopulated>,
+  splitby: string
+) => {
+  const result = data.reduce((acc, item) => {
+    var key = formatMessageGroupDate(item[splitby]);
+    if (!acc[key]) {
+      acc[key] = [];
+    }
+    acc[key].push(item);
+    return acc;
+  }, {});
+  return result;
 };
