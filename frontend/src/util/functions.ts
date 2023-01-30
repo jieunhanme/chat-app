@@ -26,6 +26,7 @@ export const formatUsernames = (
 /**
  * date-fns로 날짜 형식 뽑기
  */
+// NOTE 채팅방에서 가장 최근 메시지 날짜 형식
 export const formatConversationDate = (date: string) => {
   const d = new Date(date);
 
@@ -44,16 +45,17 @@ export const formatConversationDate = (date: string) => {
   return format(d, "yyyy.MM.dd", { locale: ko }); // 날짜 포맷
 };
 
+// NOTE 메시지 개개별 시간
 export const formatMessageItemDate = (date: string) => {
   const d = new Date(date);
   return format(d, "a hh:mm", { locale: ko });
 };
 
+// NOTE 메시지를 날짜별로 묶기 위한 기준
 export const formatMessageGroupDate = (date: string) => {
   const d = new Date(date);
   return format(d, "PPP EEEE", { locale: ko });
 };
-
 /**
  * Message 그룹 묶기
  */
