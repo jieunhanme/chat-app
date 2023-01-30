@@ -1,6 +1,6 @@
 import { Stack, Text, Flex, Avatar, Box } from "@chakra-ui/react";
 import { GoPrimitiveDot } from "react-icons/go";
-import { formatDate, formatUsernames } from "@util/functions";
+import { formatConversationDate, formatUsernames } from "@util/functions";
 import { ConversationPopulated } from "../../../../../backend/src/util/types";
 
 interface ConversationItemProps {
@@ -84,7 +84,7 @@ const ConversationItem = ({
           fontSize={13}
           lineHeight="24px"
         >
-          {formatDate(conversation.updatedAt)}
+          {formatConversationDate(conversation.updatedAt)}
         </Text>
       </Flex>
     </Stack>
